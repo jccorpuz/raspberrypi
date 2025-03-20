@@ -10,9 +10,7 @@ import nest_asyncio
 
 import json
 import random
-from joblib import Parallel, delayed
 import sys
-import multiprocessing
 import pandas as pd
 import asyncio
 import datetime
@@ -140,6 +138,12 @@ def sendtransactiondata(maintopic, mainproducerid, VIPERPORT, index, preprocesst
             print(f"Preprocessing Result JSON: {result_json}")
         except json.JSONDecodeError:
             print("Error: Response from VIPER is not a valid JSON")
+        
+        # Check for success in the result (for example, a success code or a specific flag)
+        if 'success' in result_json and result_json['success']:
+            print("Preprocessing successfully applied.")
+        else:
+            print("Preprocessing failed, please check the VIPER configuration.")
         
         return result
 
