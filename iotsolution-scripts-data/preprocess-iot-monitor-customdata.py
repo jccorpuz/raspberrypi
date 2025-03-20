@@ -56,7 +56,7 @@ if VIPERHOST=="":
 #                                     CREATE TOPICS IN KAFKA
 
 # Set personal data
-def datasetup(maintopic,preprocesstopic):
+def datasetup(maintopic, preprocesstopic):
      companyname="OTICS"
      myname="Sebastian"
      myemail="Sebastian.Maurice"
@@ -87,126 +87,124 @@ def datasetup(maintopic,preprocesstopic):
      description="TML Use Case"
 
      # Create the 4 topics in Kafka concurrently - it will return a JSON array
-     result=maadstml.vipercreatetopic(VIPERTOKEN,VIPERHOST,VIPERPORT,maintopic,companyname,
-                                    myname,myemail,mylocation,description,enabletls,
-                                    brokerhost,brokerport,numpartitions,replication,
-                                    microserviceid)
-      
+     result = maadstml.vipercreatetopic(VIPERTOKEN, VIPERHOST, VIPERPORT, maintopic, companyname,
+                                        myname, myemail, mylocation, description, enabletls,
+                                        brokerhost, brokerport, numpartitions, replication,
+                                        microserviceid)
+
      # Load the JSON array in variable y
      try:
-         y = json.loads(result,strict='False')
+         y = json.loads(result, strict='False')
      except Exception as e:
          y = json.loads(result)
 
-
-     for p in y:  # Loop through the JSON ang grab the topic and producerids
-         pid=p['ProducerId']
-         tn=p['Topic']
+     for p in y:  # Loop through the JSON and grab the topic and producerids
+         pid = p['ProducerId']
+         tn = p['Topic']
 
      # Create the 4 topics in Kafka concurrently - it will return a JSON array
-     result=maadstml.vipercreatetopic(VIPERTOKEN,VIPERHOST,VIPERPORT,preprocesstopic,companyname,
-                                    myname,myemail,mylocation,description,enabletls,
-                                    brokerhost,brokerport,numpartitions,replication,
-                                    microserviceid)
-         
-     return tn,pid
+     result = maadstml.vipercreatetopic(VIPERTOKEN, VIPERHOST, VIPERPORT, preprocesstopic, companyname,
+                                        myname, myemail, mylocation, description, enabletls,
+                                        brokerhost, brokerport, numpartitions, replication,
+                                        microserviceid)
+
+     return tn, pid
 
 
-def sendtransactiondata(maintopic,mainproducerid,VIPERPORT,index,preprocesstopic):
+def sendtransactiondata(maintopic, mainproducerid, VIPERPORT, index, preprocesstopic):
+    #############################################################################################################
+    #                                    PREPROCESS DATA STREAMS
 
+    # Roll back each data stream by 10 percent - change this to a larger number if you want more data
+    # For supervised machine learning you need a minimum of 30 data points in each stream
+    maxrows = 500
+    # Go to the last offset of each stream: If lastoffset=500, then this function will rollback the 
+    # streams to offset=500-50=450
+    offset = -1
+    # Max wait time for Kafka to respond on milliseconds - you can increase this number if
+    #maintopic to produce the preprocess data to
+    topic = maintopic
+    # producerid of the topic
+    producerid = mainproducerid
+    # use the host in Viper.env file
+    brokerhost = ''
+    # use the port in Viper.env file
+    brokerport = -999
+    # if load balancing enter the microsericeid to route the HTTP to a specific machine
+    microserviceid = ''
 
- #############################################################################################################
-      #                                    PREPROCESS DATA STREAMS
-
-      # Roll back each data stream by 10 percent - change this to a larger number if you want more data
-      # For supervised machine learning you need a minimum of 30 data points in each stream
-     maxrows=500
-      # Go to the last offset of each stream: If lastoffset=500, then this function will rollback the 
-      # streams to offset=500-50=450
-     offset=-1
-      # Max wait time for Kafka to response on milliseconds - you can increase this number if
-      #maintopic to produce the preprocess data to
-     topic=maintopic
-      # producerid of the topic
-     producerid=mainproducerid
-      # use the host in Viper.env file
-     brokerhost=''
-      # use the port in Viper.env file
-     brokerport=-999
-      #if load balancing enter the microsericeid to route the HTTP to a specific machine
-     microserviceid=''
-
-  
-      # You can preprocess with the following functions: MAX, MIN, SUM, AVG, COUNT, DIFF,OUTLIERS
-      # here we will take max values of the arcturus-humidity, we will Diff arcturus-temperature, and average arcturus-Light_Intensity
-      # NOTE: The number of process logic functions MUST match the streams - the operations will be applied in the same order
-#
-     preprocessconditions=''
-         
-     # Add a 7000 millisecond maximum delay for VIPER to wait for Kafka to return confirmation message is received and written to topic 
-     delay=70
-     # USE TLS encryption when sending to Kafka Cloud (GCP/AWS/Azure)
-     enabletls=1
-     array=0
-     saveasarray=1
-     topicid=-999
+    # You can preprocess with the following functions: MAX, MIN, SUM, AVG, COUNT, DIFF, OUTLIERS
+    # here we will take max values of the arcturus-humidity, we will Diff arcturus-temperature, and average arcturus-Light_Intensity
+    # NOTE: The number of process logic functions MUST match the streams - the operations will be applied in the same order
+    preprocessconditions = ''
     
-     rawdataoutput=1
-     asynctimeout=120
-     timedelay=0
+    # Add a 7000 millisecond maximum delay for VIPER to wait for Kafka to return confirmation message is received and written to topic 
+    delay = 70
+    # USE TLS encryption when sending to Kafka Cloud (GCP/AWS/Azure)
+    enabletls = 1
+    array = 0
+    saveasarray = 1
+    topicid = -999
+    
+    rawdataoutput = 1
+    asynctimeout = 120
+    timedelay = 0
 
-     jsoncriteria='uid=metadata.dsn,filter:allrecords~\
-subtopics=metadata.property_name~\
-values=datapoint.value~\
-identifiers=metadata.display_name~\
-datetime=datapoint.updated_at~\
-msgid=datapoint.id~\
-latlong=lat:long'     
+    jsoncriteria = 'uid=metadata.dsn,filter:allrecords~\
+    subtopics=metadata.property_name~\
+    values=datapoint.value~\
+    identifiers=metadata.display_name~\
+    datetime=datapoint.updated_at~\
+    msgid=datapoint.id~\
+    latlong=lat:long'     
 
-     tmlfilepath=''
-     usemysql=1
+    tmlfilepath = ''
+    usemysql = 1
 
-     streamstojoin="" 
-     identifier = "IoT device performance and failures"
+    streamstojoin = "" 
+    identifier = "IoT device performance and failures"
 
-     # if dataage - use:dataage_utcoffset_timetype
-     preprocesslogic='MIN,MAX,COUNT,VARIANCE,OUTLIERS,ANOMPROB'
+    # if dataage - use:dataage_utcoffset_timetype
+    preprocesslogic = 'MIN,MAX,COUNT,VARIANCE,OUTLIERS,ANOMPROB'
 
-     pathtotmlattrs='oem=n/a,lat=n/a,long=n/a,location=n/a,identifier=n/a'          
-     try:
-        print(f"Preprocessing with logic: {preprocesslogic}")
-        result=maadstml.viperpreprocesscustomjson(VIPERTOKEN,VIPERHOST,VIPERPORT,topic,producerid,offset,jsoncriteria,rawdataoutput,maxrows,enabletls,delay,brokerhost,
-                                          brokerport,microserviceid,topicid,streamstojoin,preprocesslogic,preprocessconditions,identifier,
-                                          preprocesstopic,array,saveasarray,timedelay,asynctimeout,usemysql,tmlfilepath,pathtotmlattrs)
-        #print(result)
+    pathtotmlattrs = 'oem=n/a,lat=n/a,long=n/a,location=n/a,identifier=n/a'          
+    
+    try:
+        print(f"Preprocessing with logic: {preprocesslogic}")  # Debugging line
+        result = maadstml.viperpreprocesscustomjson(VIPERTOKEN, VIPERHOST, VIPERPORT, topic, producerid, offset,
+                                                    jsoncriteria, rawdataoutput, maxrows, enabletls, delay,
+                                                    brokerhost, brokerport, microserviceid, topicid, streamstojoin,
+                                                    preprocesslogic, preprocessconditions, identifier,
+                                                    preprocesstopic, array, saveasarray, timedelay, asynctimeout,
+                                                    usemysql, tmlfilepath, pathtotmlattrs)
+        print(f"Preprocessing result: {result}")  # Debugging line
         return result
-     except Exception as e:
-        print(e)
+    except Exception as e:
+        print("ERROR:", e)
         return e
      
 
 #############################################################################################################
 #                                     SETUP THE TOPIC DATA STREAMS FOR WALMART EXAMPLE
 
-maintopic='iot-mainstream'
-preprocesstopic='iot-preprocess'
-maintopic,producerid=datasetup(maintopic,preprocesstopic)
-print("Started Preprocessing: ", maintopic,producerid)
+maintopic = 'iot-mainstream'
+preprocesstopic = 'iot-preprocess'
+maintopic, producerid = datasetup(maintopic, preprocesstopic)
+print(f"Topic setup complete. Main topic: {maintopic}, Producer ID: {producerid}")
 
 async def startviper():
-
-        print("Start Preprocess-iot-monitor-customdata Request:",datetime.datetime.now())
-        while True:
-          try:   
-            sendtransactiondata(maintopic,producerid,VIPERPORT,-1,preprocesstopic)            
+    print("Start Preprocess-iot-monitor-customdata Request:", datetime.datetime.now())
+    print("Starting the data stream processing...")  # Debugging line
+    while True:
+        try:
+            sendtransactiondata(maintopic, producerid, VIPERPORT, -1, preprocesstopic)
             time.sleep(1)
-          except Exception as e:
-            print("ERROR:",e)
+        except Exception as e:
+            print("ERROR:", e)
             continue
-     preprocesslogic='MIN,MAX,COUNT,VARIANCE,OUTLIERS,ANOMPROB'
    
-async def spawnvipers():
 
+async def spawnvipers():
     loop.run_until_complete(startviper())
   
 loop = asyncio.new_event_loop()
@@ -214,4 +212,3 @@ loop.create_task(spawnvipers())
 asyncio.set_event_loop(loop)
 
 loop.run_forever()
-
