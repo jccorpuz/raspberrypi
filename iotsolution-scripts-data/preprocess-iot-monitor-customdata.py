@@ -141,7 +141,7 @@ def sendtransactiondata(maintopic,mainproducerid,VIPERPORT,index,preprocesstopic
       # here we will take max values of the arcturus-humidity, we will Diff arcturus-temperature, and average arcturus-Light_Intensity
       # NOTE: The number of process logic functions MUST match the streams - the operations will be applied in the same order
 #
-     preprocessconditions='MIN,MAX,COUNT,VARIANCE,OUTLIERS,ANOMPROB'
+     preprocessconditions=' '
          
      # Add a 7000 millisecond maximum delay for VIPER to wait for Kafka to return confirmation message is received and written to topic 
      delay=70
